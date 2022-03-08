@@ -1,0 +1,36 @@
+name: Develop CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+env:
+  APP_NAME: man-net48
+    
+jobs:
+  continuous_integration:
+    name: Continuous Integration
+
+    uses: kubeopsskills-enterprise/ais-share-pipeline/.github/workflows/net48-ci.yml@main
+    with:
+      APP_NAME: $APP_NAME
+    secrets:
+      STORAGE_ACCOUNT_CONNECTION_STRING: ${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}
+
+  # repository-dispatch:
+  #   name: Repository dispatch
+  #   needs: continuous_integration
+  #   if: github.event_name == 'push'
+
+  #   uses: kubeopsskills-enterprise/ais-share-pipeline/.github/workflows/repository-dispatch.yml@main
+  #   with:
+  #     REPOSITORY: 'kubeopsskills-enterprise/man-ng-pipeline'
+  #     EVENT_TYPE: 'dev-ais-ng-repository-dispatch'
+  #     SHA: ${GITHUB_SHA}
+  #   secrets:
+  #     PAT : ${{ secrets.ORG_PAT  }}
