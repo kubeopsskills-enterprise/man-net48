@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload artifact for deployment job
         run: |
-          7za a artifact-${GITHUB_SHA}.zip .\published\*
+          7z a artifact-${GITHUB_SHA}.zip .\published\*
           az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}\artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           rm .\artifact-${GITHUB_SHA}.zip
 
