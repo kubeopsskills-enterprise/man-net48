@@ -49,7 +49,8 @@ jobs:
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
-          vstest.console.exe /ResultsDirectory/unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll
+          mkdir unit-test-results
+          vstest.console.exe /unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll
           ls unit-test-results
 
 #vstest.console.exe /ResultsDirectory/unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
