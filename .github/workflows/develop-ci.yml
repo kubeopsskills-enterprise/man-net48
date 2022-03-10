@@ -158,6 +158,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'develop'
+          
       - name: Repository dispatch
         run: |
           DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "${GITHUB_SHA}"' ./.github/template/env-repository-dispatch.json)
