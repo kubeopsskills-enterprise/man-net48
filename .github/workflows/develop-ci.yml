@@ -102,72 +102,72 @@ jobs:
   #     - name: Perform CodeQL Analysis
   #       uses: github/codeql-action/analyze@v1
 
-  # build:
-  #   name: Build
-  #   needs: [unit_tests]
-  #   # needs: [unit_tests, codeql]
-  #   runs-on: windows-2019
-  #   if: github.event_name != 'pull_request'
+  build:
+    name: Build
+    # needs: [unit_tests, codeql]
+    runs-on: windows-2019
+    if: github.event_name != 'pull_request'
     
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Setup MSBuild path
-  #       uses: microsoft/setup-msbuild@v1.0.2
-
-  #     - name: Setup NuGet
-  #       uses: NuGet/setup-nuget@v1.0.5
-    
-  #     - uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           %userprofile%\.nuget\packages
-  #           %localappdata%\NuGet\v3-cache
-  #           %temp%\NuGetScratch
-  #           ${{ github.workspace }}\packages
-  #           %localappdata%\NuGet\plugins-cache
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
-
-  #     - name: Restore NuGet packages
-  #       run: nuget restore
-
-  #     - name: Publish to folder
-  #       run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
-
-  #     - name: Upload artifact for deployment job
-  #       run: |
-  #         7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
-  #         az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-  #         rm .\artifact-$env:GITHUB_SHA.zip
-  #         Remove-Item .\published\  -Recurse
-
-  #     - name: Save artifact name to develop branch
-  #       run: |
-  #         echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
-  #         git config user.name github-actions
-  #         git config user.email github-actions@github.com
-  #         git add .
-  #         git commit -m "save latest artifact build name on Develop workflow [skip ci]"
-  #         git push
-
-  repository_dispatch:
-    name: Repository dispatch
-    # needs: build
-    runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: 'develop'
 
-      - name: Repository dispatch
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+    
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Publish to folder
+        run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+
+      - name: Upload artifact for deployment job
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
-          echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-            --header 'accept: application/vnd.github.v3+json' \
-            --header 'Content-Type: application/json' \
-            --data-raw "$DISPATCH_BODY"
+          dir $env:GITHUB_WORKSPACE"\published\"
+          7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
+          az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          rm .\artifact-$env:GITHUB_SHA.zip
+          Remove-Item .\published\  -Recurse
+
+      - name: Save artifact name to develop branch
+        run: |
+          echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "save latest artifact build name on Develop workflow [skip ci]"
+          git push
+
+  # repository_dispatch:
+  #   name: Repository dispatch
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         ref: 'develop'
+
+  #     - name: Repository dispatch
+  #       run: |
+  #         DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
+  #         echo $DISPATCH_BODY
+  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+  #           --header 'accept: application/vnd.github.v3+json' \
+  #           --header 'Content-Type: application/json' \
+  #           --data-raw "$DISPATCH_BODY"
