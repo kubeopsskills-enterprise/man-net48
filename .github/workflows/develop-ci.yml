@@ -49,8 +49,11 @@ jobs:
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
-          vstest.console.exe .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
-          cat unit-test-results
+          vstest.console.exe /ResultsDirectory/unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll
+          ls unit-test-results
+
+#vstest.console.exe /ResultsDirectory/unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
+
 
       - uses: actions/upload-artifact@v3
         with:
@@ -78,6 +81,18 @@ jobs:
         uses: github/codeql-action/init@v1
         with:
           languages: ${{ matrix.language }}
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
