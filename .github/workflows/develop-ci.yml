@@ -134,15 +134,17 @@ jobs:
 
       - name: Upload artifact for deployment job
         run: |
+          echo ${GITHUB_WORKSPACE}
           7z a artifact-${GITHUB_SHA}.zip ${GITHUB_WORKSPACE}\published\*
-          az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}\artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-          rm .\artifact-${GITHUB_SHA}.zip
+          dir
+      #     az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}\artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+      #     rm .\artifact-${GITHUB_SHA}.zip
 
-      - name: Save artifact name to develop branch
-        run: |
-          echo artifact-${GITHUB_SHA}.zip > latest-build-artifact
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "save latest artifact build name on Develop workflow [skip ci]"
-          git push
+      # - name: Save artifact name to develop branch
+      #   run: |
+      #     echo artifact-${GITHUB_SHA}.zip > latest-build-artifact
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "save latest artifact build name on Develop workflow [skip ci]"
+      #     git push
