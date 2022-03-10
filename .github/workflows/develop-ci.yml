@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload artifact for deployment job
         run: |
-          7z a artifact-${GITHUB_SHA}.zip ${GITHUB_WORKSPACE}\published\*
+          7z a artifact-${GITHUB_SHA}.zip D:\a\man-net48\man-net48\published\*
 
       - run: |
           dir
