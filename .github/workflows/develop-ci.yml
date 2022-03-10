@@ -50,7 +50,7 @@ jobs:
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
           mkdir unit-test-results
-          vstest.console.exe /unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll
+          vstest.console.exe /ResultsDirectory:.\unit-test-results .\UnitTestProject1\bin\Release\UnitTestProject1.dll
           ls unit-test-results
 
 #vstest.console.exe /ResultsDirectory/unit-test-results: .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
@@ -59,47 +59,47 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: unit-test-results
-          path: ./unit-test-results
+          path: .\unit-test-results
 
-  codeql:
-      name: CodeQL
-      runs-on: windows-2019
-      permissions:
-        actions: read
-        contents: read
-        security-events: write
+  # codeql:
+  #     name: CodeQL
+  #     runs-on: windows-2019
+  #     permissions:
+  #       actions: read
+  #       contents: read
+  #       security-events: write
 
-      strategy:
-        fail-fast: false
-        matrix:
-          language: [ 'javascript', 'csharp' ]
+  #     strategy:
+  #       fail-fast: false
+  #       matrix:
+  #         language: [ 'javascript', 'csharp' ]
 
-      steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  #     steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
+  #     - name: Initialize CodeQL
+  #       uses: github/codeql-action/init@v1
+  #       with:
+  #         languages: ${{ matrix.language }}
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            %userprofile%\.nuget\packages
-            %localappdata%\NuGet\v3-cache
-            %temp%\NuGetScratch
-            ${{ github.workspace }}\packages
-            %localappdata%\NuGet\plugins-cache
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: |
+  #           %userprofile%\.nuget\packages
+  #           %localappdata%\NuGet\v3-cache
+  #           %temp%\NuGetScratch
+  #           ${{ github.workspace }}\packages
+  #           %localappdata%\NuGet\plugins-cache
+  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-nuget-
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+  #     - name: Autobuild
+  #       uses: github/codeql-action/autobuild@v1
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v1
 
   # build:
   #   name: Build
