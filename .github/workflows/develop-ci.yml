@@ -101,7 +101,7 @@ jobs:
     name: Build
     # needs: [unit_tests]
     # needs: [unit_tests, codeql]
-    runs-on: ubuntu-latest
+    runs-on: windows-2019
     if: github.event_name != 'pull_request'
     
     steps:
