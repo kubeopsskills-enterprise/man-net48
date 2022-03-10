@@ -98,54 +98,52 @@ jobs:
   #     - name: Perform CodeQL Analysis
   #       uses: github/codeql-action/analyze@v1
 
-  test:
-    runs-on: windows-2019
-
-    steps:
-      - run: |
-          ls env:\
-  # build:
-  #   name: Build
-  #   # needs: [unit_tests]
-  #   # needs: [unit_tests, codeql]
+  # test:
   #   runs-on: windows-2019
-  #   if: github.event_name != 'pull_request'
-    
+
   #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Setup MSBuild path
-  #       uses: microsoft/setup-msbuild@v1.0.2
-
-  #     - name: Setup NuGet
-  #       uses: NuGet/setup-nuget@v1.0.5
-    
-  #     - uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           %userprofile%\.nuget\packages
-  #           %localappdata%\NuGet\v3-cache
-  #           %temp%\NuGetScratch
-  #           ${{ github.workspace }}\packages
-  #           %localappdata%\NuGet\plugins-cache
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
-
-  #     - name: Restore NuGet packages
-  #       run: nuget restore
-
-  #     - name: Publish to folder
-  #       run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="D:\a\man-net48\man-net48\published\"
-
-  #     - run: echo $GITHUB_WORKSPACE
-
   #     - run: |
-  #         dir
+  #         ls env:\
+  build:
+    name: Build
+    # needs: [unit_tests]
+    # needs: [unit_tests, codeql]
+    runs-on: windows-2019
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Upload artifact for deployment job
-  #       run: |
-  #         7z a artifact-${GITHUB_SHA}.zip D:\a\man-net48\man-net48\published\*
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+    
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Publish to folder
+        run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+
+      - run: |
+          dir
+
+      # - name: Upload artifact for deployment job
+      #   run: |
+      #     7z a artifact-${GITHUB_SHA}.zip D:\a\man-net48\man-net48\published\*
 
   #     - run: |
   #         dir
