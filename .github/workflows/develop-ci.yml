@@ -49,9 +49,9 @@ jobs:
       - run: |
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
-          echo $env:Path
           $env:Path += ';'+$path
-          echo $env:Path
+
+      - run: |
           vstest.console.exe
 
   # continuous_integration:
