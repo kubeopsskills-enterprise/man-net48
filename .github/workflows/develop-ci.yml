@@ -41,18 +41,16 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore
 
-      - name: Publish to folder
+      - name: Build unit test projects
         run: msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release
 
-      - run: dir .\UnitTestProject1\bin\Release
-
-      - run: |
+      - name: Run uni tests
+        run: |
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
+          vstest.console.exe .\UnitTestProject1\bin\Release\UnitTestProject1.dll
 
-      - run: |
-          vstest.console.exe
 
   # continuous_integration:
   #   name: Continuous Integration
