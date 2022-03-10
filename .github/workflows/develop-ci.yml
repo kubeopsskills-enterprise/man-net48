@@ -50,13 +50,11 @@ jobs:
 
       - name: Run unit tests
         run: |
-          ls env:\
-          echo "X => "${{ steps.built-unit-test-project.outputs.DLL_PATH }}
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
           mkdir unit-test-results
-          vstest.console.exe  .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results.txt
+          vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
 
       - uses: actions/upload-artifact@v3
         with:
