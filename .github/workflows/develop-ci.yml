@@ -97,41 +97,42 @@ jobs:
   #     - name: Perform CodeQL Analysis
   #       uses: github/codeql-action/analyze@v1
 
-  # build:
-  #   name: Build
-  #   needs: [unit_tests, codeql]
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name != 'pull_request'
+  build:
+    name: Build
+    needs: [unit_tests]
+    # needs: [unit_tests, codeql]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         ref: 'develop'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'develop'
 
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: '16'
-  #         cache: 'npm'
-  #         cache-dependency-path: ./package-lock.json
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+          cache-dependency-path: ./package-lock.json
 
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Install dependencies
+        run: npm install
 
-  #     - name: Build
-  #       run: npm run build
+      - name: Build
+        run: npm run build
 
-  #     - name: Upload artifact for deployment job
-  #       run: |
-  #         zip artifact-${GITHUB_SHA}.zip -r ./dist/${{ env.APP_NAME }}
-  #         rm -rf ./dist/${{ env.APP_NAME }}
-  #         az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}/artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-  #         rm artifact-${GITHUB_SHA}.zip
+      - name: Upload artifact for deployment job
+        run: |
+          zip artifact-${GITHUB_SHA}.zip -r ./dist/${{ env.APP_NAME }}
+          rm -rf ./dist/${{ env.APP_NAME }}
+          az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}/artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          rm artifact-${GITHUB_SHA}.zip
 
-  #     - name: Save artifact name to develop branch
-  #       run: |
-  #         echo artifact-${GITHUB_SHA}.zip > latest-build-artifact
-  #         git config user.name github-actions
-  #         git config user.email github-actions@github.com
-  #         git add .
-  #         git commit -m "save latest artifact build name on Develop workflow [skip ci]"
-  #         git push
+      - name: Save artifact name to develop branch
+        run: |
+          echo artifact-${GITHUB_SHA}.zip > latest-build-artifact
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "save latest artifact build name on Develop workflow [skip ci]"
+          git push
