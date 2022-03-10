@@ -164,7 +164,7 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          $SHA = $env:GITHUB_SHA
+          $SHA=$env:GITHUB_SHA
 # echo $SHA
 # DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'$SHA'"' ./.github/template/env-repository-dispatch.json)
 # echo $DISPATCH_BODY
