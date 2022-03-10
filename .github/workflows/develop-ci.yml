@@ -103,7 +103,7 @@ jobs:
 
     steps:
       - run: |
-          echo ${GITHUB_SHA}
+          ls env:\
   # build:
   #   name: Build
   #   # needs: [unit_tests]
