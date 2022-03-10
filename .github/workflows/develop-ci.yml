@@ -55,6 +55,7 @@ jobs:
           $env:Path += ';'+$path
           mkdir unit-test-results
           vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
+          cat unit-test-results.txt
 
       - uses: actions/upload-artifact@v3
         with:
