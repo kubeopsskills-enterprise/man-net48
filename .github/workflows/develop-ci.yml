@@ -130,7 +130,7 @@ jobs:
         run: nuget restore
 
       - name: Publish to folder
-        run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
+        run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=".\published\"
 
       - run: echo ${GITHUB_WORKSPACE}
 
@@ -146,6 +146,7 @@ jobs:
       #     az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}\artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
       #     rm .\artifact-${GITHUB_SHA}.zip
 
+      # - name: Upload artifact for deployment job
       # - name: Save artifact name to develop branch
       #   run: |
       #     echo artifact-${GITHUB_SHA}.zip > latest-build-artifact
