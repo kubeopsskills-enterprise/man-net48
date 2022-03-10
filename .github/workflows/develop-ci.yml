@@ -132,7 +132,7 @@ jobs:
       - name: Publish to folder
         run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=".\published\"
 
-      - run: echo ${GITHUB_WORKSPACE}
+      - run: echo $GITHUB_WORKSPACE
 
       - run: |
           dir
