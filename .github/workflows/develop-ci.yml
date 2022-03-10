@@ -138,14 +138,12 @@ jobs:
       - name: Publish to folder
         run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
 
-      - run: |
-          dir
-
       - name: Upload artifact for deployment job
         run: |
           7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
           az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           rm .\artifact-$env:GITHUB_SHA.zip
+          Remove-Item .\published\  -Recurse
 
       - name: Save artifact name to develop branch
         run: |
