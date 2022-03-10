@@ -49,13 +49,13 @@ jobs:
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
-          vstest.console.exe /lt .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
+          vstest.console.exe .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
           cat unit-test-results
 
       - uses: actions/upload-artifact@v3
         with:
           name: unit-test-results
-          path: ./coverage
+          path: ./unit-test-results
 
   codeql:
       name: CodeQL
