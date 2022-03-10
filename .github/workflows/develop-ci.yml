@@ -45,7 +45,7 @@ jobs:
       - name: Build unit test project
         id: built-unit-test-project
         run: |
-          $dll_path = ((msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
+          $dll_path = ((msbuild $env:UNIT_TEST_CSPROJ /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
           echo "::set-output name=DLL_PATH::$dll_path"
 
       - name: Run unit tests
@@ -133,10 +133,8 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore
 
-      - run: ls env:\
-
       - name: Publish to folder
-        run: msbuild $APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+        run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
 
       - name: Upload artifact for deployment job
         run: |
