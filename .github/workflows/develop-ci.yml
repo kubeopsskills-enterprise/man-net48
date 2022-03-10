@@ -43,15 +43,15 @@ jobs:
         run: nuget restore
 
       - name: Build unit test project
+        id: built-unit-test-project
         run: |
           $dll_path = ((msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
-          echo "unit_test_dll="$dll_path
-          echo "unit_test_dll="$dll_path >> $GITHUB_ENV
+          echo "::set-output name=DLL_PATH::"$dll_path
 
       - name: Run unit tests
         run: |
           ls env:\
-          echo ${{ env.unit_test_dll }}
+          echo "X => "${{ steps.built-unit-test-project.outputs.DLL_PATH }}
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
