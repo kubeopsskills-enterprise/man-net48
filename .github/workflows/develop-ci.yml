@@ -164,12 +164,10 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          $SHA="$env:GITHUB_SHA"
-# echo $SHA
-# DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'$SHA'"' ./.github/template/env-repository-dispatch.json)
-# echo $DISPATCH_BODY
-# curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-#   --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-#   --header 'accept: application/vnd.github.v3+json' \
-#   --header 'Content-Type: application/json' \
-#   --data-raw "$DISPATCH_BODY"
+          DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "${GITHUB_SHA}"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
