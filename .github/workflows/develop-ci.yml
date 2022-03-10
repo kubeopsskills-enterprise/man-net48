@@ -141,9 +141,9 @@ jobs:
       - run: |
           dir
 
-      # - name: Upload artifact for deployment job
-      #   run: |
-      #     7z a artifact-${GITHUB_SHA}.zip D:\a\man-net48\man-net48\published\*
+      - name: Upload artifact for deployment job
+        run: |
+          7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE+"\published\*"
 
   #     - run: |
   #         dir
