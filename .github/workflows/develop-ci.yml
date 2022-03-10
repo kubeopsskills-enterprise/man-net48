@@ -13,14 +13,55 @@ env:
   APP_NAME: man-net48
     
 jobs:
-  continuous_integration:
-    name: Continuous Integration
+  unit_tests:
+    name: Unit tests
+    runs-on: windows-2019
 
-    uses: kubeopsskills-enterprise/ais-share-pipeline/.github/workflows/net48-ci.yml@main
-    with:
-      APP_NAME: $APP_NAME
-    secrets:
-      STORAGE_ACCOUNT_CONNECTION_STRING: ${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Publish to folder
+        run: msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release
+
+      - run: dir .\UnitTestProject1\bin\Release
+
+      - run: |
+          $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
+          $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
+          echo $env:Path
+          $env:Path += ';'+$path
+          echo $env:Path
+          vstest.console.exe
+
+  # continuous_integration:
+  #   name: Continuous Integration
+
+  #   uses: kubeopsskills-enterprise/ais-share-pipeline/.github/workflows/net48-ci.yml@main
+  #   with:
+  #     APP_NAME: $APP_NAME
+  #   secrets:
+  #     STORAGE_ACCOUNT_CONNECTION_STRING: ${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}
 
   # repository-dispatch:
   #   name: Repository dispatch
