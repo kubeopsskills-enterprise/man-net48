@@ -50,7 +50,7 @@ jobs:
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
           $env:Path += ';'+$path
           vstest.console.exe /lt .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results
-          echo unit-test-results
+          cat unit-test-results
 
       - uses: actions/upload-artifact@v3
         with:
@@ -59,7 +59,7 @@ jobs:
 
   codeql:
       name: CodeQL
-      runs-on: ubuntu-latest
+      runs-on: windows-2019
       permissions:
         actions: read
         contents: read
