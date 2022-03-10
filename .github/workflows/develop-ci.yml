@@ -138,6 +138,7 @@ jobs:
       - name: Upload artifact for deployment job
         run: |
           dir $env:GITHUB_WORKSPACE"\published\"
+          dir $env:GITHUB_WORKSPACE"\published\bin"
           7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
           az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           rm .\artifact-$env:GITHUB_SHA.zip
