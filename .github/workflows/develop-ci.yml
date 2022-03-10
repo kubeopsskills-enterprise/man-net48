@@ -50,6 +50,7 @@ jobs:
 
       - name: Run unit tests
         run: |
+          ls env:\
           echo ${{ env.unit_test_dll }}
           $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
           $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
