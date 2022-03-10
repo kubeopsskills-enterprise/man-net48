@@ -13,49 +13,49 @@ env:
   APP_NAME: man-net48
     
 jobs:
-  unit_tests:
-    name: Unit tests
-    runs-on: windows-2019
+  # unit_tests:
+  #   name: Unit tests
+  #   runs-on: windows-2019
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
+  #     - name: Setup MSBuild path
+  #       uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+  #     - name: Setup NuGet
+  #       uses: NuGet/setup-nuget@v1.0.5
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            %userprofile%\.nuget\packages
-            %localappdata%\NuGet\v3-cache
-            %temp%\NuGetScratch
-            ${{ github.workspace }}\packages
-            %localappdata%\NuGet\plugins-cache
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: |
+  #           %userprofile%\.nuget\packages
+  #           %localappdata%\NuGet\v3-cache
+  #           %temp%\NuGetScratch
+  #           ${{ github.workspace }}\packages
+  #           %localappdata%\NuGet\plugins-cache
+  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-nuget-
 
-      - name: Restore NuGet packages
-        run: nuget restore
+  #     - name: Restore NuGet packages
+  #       run: nuget restore
 
-      - name: Build unit test projects
-        run: msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release
+  #     - name: Build unit test projects
+  #       run: msbuild .\UnitTestProject1\UnitTestProject1.csproj /nologo /verbosity:m /t:Build /p:Configuration=Release
 
-      - name: Run unit tests
-        run: |
-          $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
-          $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
-          $env:Path += ';'+$path
-          mkdir unit-test-results
-          vstest.console.exe  .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results.txt
+  #     - name: Run unit tests
+  #       run: |
+  #         $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
+  #         $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
+  #         $env:Path += ';'+$path
+  #         mkdir unit-test-results
+  #         vstest.console.exe  .\UnitTestProject1\bin\Release\UnitTestProject1.dll > unit-test-results.txt
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: unit-test-results
-          path: unit-test-results.txt
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: unit-test-results
+  #         path: unit-test-results.txt
 
   # codeql:
   #     name: CodeQL
@@ -99,27 +99,37 @@ jobs:
 
   build:
     name: Build
-    needs: [unit_tests]
+    # needs: [unit_tests]
     # needs: [unit_tests, codeql]
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+    
+      - uses: actions/cache@v2
         with:
-          ref: 'develop'
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: ./package-lock.json
+      - name: Restore NuGet packages
+        run: nuget restore
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
+      - name: Publish to folder
+        run: msbuild .\SimpleNetFrame\SimpleNetFrame.csproj /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
 
       - name: Upload artifact for deployment job
         run: |
