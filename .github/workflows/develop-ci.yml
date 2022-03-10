@@ -11,6 +11,7 @@ on:
 
 env:
   APP_NAME: man-net48
+  APP_CSPROJ: 
     
 jobs:
   # unit_tests:
@@ -133,10 +134,9 @@ jobs:
 
       - name: Upload artifact for deployment job
         run: |
-          zip artifact-${GITHUB_SHA}.zip -r ./dist/${{ env.APP_NAME }}
-          rm -rf ./dist/${{ env.APP_NAME }}
-          az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}/artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-          rm artifact-${GITHUB_SHA}.zip
+          7za a artifact-${GITHUB_SHA}.zip .\published\*
+          az storage blob upload -c build -n artifact-${GITHUB_SHA}.zip -f ${GITHUB_WORKSPACE}\artifact-${GITHUB_SHA}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          rm .\artifact-${GITHUB_SHA}.zip
 
       - name: Save artifact name to develop branch
         run: |
