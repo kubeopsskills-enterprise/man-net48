@@ -76,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+      
       - uses: actions/checkout@v3
         with:
           ref: ${{ env.retrieved_reference }}
