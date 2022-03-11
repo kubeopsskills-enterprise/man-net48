@@ -22,7 +22,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           docker_name: 'owasp/zap2docker-stable'
-          target: "http://man-net48-sit.azurewebsites.net/"
+          target: ${{ env.SIT_SITE }}
           rules_file_name: '.zap/rules.tsv'
           fail_action: true
 
