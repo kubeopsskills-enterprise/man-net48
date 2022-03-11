@@ -12,9 +12,13 @@ on:
 
 jobs:
   retrieve_latest_artifact:
-    name: Retrieve latest artifact
+    name: Retrieve reference
     runs-on: ubuntu-latest
     if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    outputs:
+      retrieve_tagging: ${{ steps.retrieve_tagging.outputs.test }}
+      workflow_dispatch: ${{ steps.workflow_dispatch.outputs.test }}
     
     steps:
       - name: Checkout repository (Triggered by tagging)
@@ -23,30 +27,46 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
 
-      - name: Checkout repository (Triggered manually)
+      - name: Checkout repository (Triggered by workflow dispatch)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.tags }}
-
+        
       - name: Retrieve the tag (Tagging)
+        id: retrieve_tagging
         if: github.event.base_ref=='refs/heads/main'
         run: |
-          echo "retrieved_reference=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "::set-output name=test::${{ github.ref_name }}"
           echo ${{ github.ref_name }}
 
-      - name: Retrieve the tag (Manually)
+      - name: Retrieve the tag (Workflow Dispatch)
+        id: workflow_dispatch
         if: github.event_name == 'workflow_dispatch'
         run: |
-          echo "retrieved_reference=${{ github.event.inputs.tags }}" >> $GITHUB_ENV
+          echo "::set-output name=test::${{ github.event.inputs.tags }}"
           echo ${{ github.event.inputs.tags }}
+
+      # - name: Retrieve the tag (Tagging)
+      #   id: retrieve_tagging
+      #   if: github.event.base_ref=='refs/heads/main'
+      #   run: |
+      #     echo "retrieved_reference=${{ github.ref_name }}" >> $GITHUB_ENV
+      #     echo ${{ github.ref_name }}
+
+      # - name: Retrieve the tag (Manually)
+      #   if: github.event_name == 'workflow_dispatch'
+      #   run: |
+      #     echo "retrieved_reference=${{ github.event.inputs.tags }}" >> $GITHUB_ENV
+      #     echo ${{ github.event.inputs.tags }}
 
   test:
     needs: retrieve_latest_artifact
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "${{ env.retrieved_reference }}" # This will output 'yellow'
+      - run: echo ${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}} ${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}
+      # - run: echo "${{ env.retrieved_reference }}" # This will output 'yellow'
 
       # - name: Investigate tagging
       #   run: |
