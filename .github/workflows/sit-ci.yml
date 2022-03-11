@@ -68,7 +68,7 @@ jobs:
           ls
           mv ${ARTIFACT_NAME} artifact-${{ env.retrieved_reference }}.zip
           ls
-          az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}\artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}/artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
 
       # - name: Investigate tagging
       #   run: |
