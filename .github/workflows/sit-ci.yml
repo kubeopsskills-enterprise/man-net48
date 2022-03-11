@@ -29,17 +29,32 @@ jobs:
         with:
           ref: ${{ github.event.inputs.tags }}
 
-      - name: Investigate tagging
+      - name: Retrieve the tag (Tagging)
+        if: github.event.base_ref=='refs/heads/main'
         run: |
+          echo "retrieved_reference=${{ github.ref_name }}" >> $GITHUB_ENV
           echo ${{ github.ref_name }}
 
-      - name: Investigate tagging
+      - name: Retrieve the tag (Manually)
+        if: github.event_name == 'workflow_dispatch'
         run: |
-          echo ${{ github.event.base_ref }}
+          echo "retrieved_reference=${{ github.event.inputs.tags }}" >> $GITHUB_ENV
+          echo ${{ github.event.inputs.tags }}
 
-      - name: Investigate tagging
-        run: |
-          echo "Tags: ${{ github.event.inputs.tags }}" 
+  test:
+    needs: retrieve_latest_artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "${{ env.retrieved_reference }}" # This will output 'yellow'
+
+      # - name: Investigate tagging
+      #   run: |
+      #     echo ${{ github.event.base_ref }}
+
+      # - name: Investigate tagging
+      #   run: |
+      #     echo "Tags: ${{ github.event.inputs.tags }}" 
 
   #     - name: Retrieve latest artifact name
   #       id: artifact_name
