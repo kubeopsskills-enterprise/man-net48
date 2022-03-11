@@ -47,19 +47,6 @@ jobs:
           echo "::set-output name=test::${{ github.event.inputs.tags }}"
           echo ${{ github.event.inputs.tags }}
 
-      # - name: Retrieve the tag (Tagging)
-      #   id: retrieve_tagging
-      #   if: github.event.base_ref=='refs/heads/main'
-      #   run: |
-      #     echo "retrieved_reference=${{ github.ref_name }}" >> $GITHUB_ENV
-      #     echo ${{ github.ref_name }}
-
-      # - name: Retrieve the tag (Manually)
-      #   if: github.event_name == 'workflow_dispatch'
-      #   run: |
-      #     echo "retrieved_reference=${{ github.event.inputs.tags }}" >> $GITHUB_ENV
-      #     echo ${{ github.event.inputs.tags }}
-
   duplicate_artifact:
     name: Duplicate the artifact and name it after retrieve reference
     needs: retrieve_latest_artifact
