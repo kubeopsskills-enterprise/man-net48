@@ -60,7 +60,8 @@ jobs:
       #     echo "retrieved_reference=${{ github.event.inputs.tags }}" >> $GITHUB_ENV
       #     echo ${{ github.event.inputs.tags }}
 
-  test:
+  duplicate_artifact:
+    name: Duplicate the artifact and name it after retrieve reference
     needs: retrieve_latest_artifact
     runs-on: ubuntu-latest
 
@@ -68,9 +69,20 @@ jobs:
       - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
       - run: echo "${{ env.retrieved_reference }}"
 
+      - name: Checkout repository
+        if: github.event.base_ref=='refs/heads/main'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.retrieved_reference }}
+
       - name: Duplicate latest build artifact and name it with the retrieved reference
         run: |
-          echo "xxx"
+          ARTIFACT_NAME=$(cat latest-build-artifact)
+          az storage blob download -c "build" -n ${ARTIFACT_NAME} -f ${GITHUB_WORKSPACE}/${ARTIFACT_NAME} --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          ls
+          mv ${ARTIFACT_NAME} artifact-${{ env.retrieved_reference }}.zip
+          ls
+          az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}\artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
 
       # - name: Investigate tagging
       #   run: |
