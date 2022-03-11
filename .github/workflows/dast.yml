@@ -5,7 +5,7 @@ on:
     types: [dast-man-net48-repository-dispatch]
 
 env:
-  SIT_SITE: "https://man-net48-sit.azurewebsites.net"
+  SIT_SITE: "http://man-net48-sit.azurewebsites.net/"
 
 jobs:
   zap_scan:
@@ -22,7 +22,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           docker_name: 'owasp/zap2docker-stable'
-          target: $SIT_SITE
+          target: "http://man-net48-sit.azurewebsites.net/"
           rules_file_name: '.zap/rules.tsv'
           fail_action: true
 
