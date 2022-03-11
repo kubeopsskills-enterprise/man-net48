@@ -65,8 +65,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo ${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}} ${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}
-      # - run: echo "${{ env.retrieved_reference }}" # This will output 'yellow'
+      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+      - run: echo "${{ env.retrieved_reference }}"
+
+      - name: Duplicate latest build artifact and name it with the retrieved reference
+        run: |
+          echo "xxx"
 
       # - name: Investigate tagging
       #   run: |
