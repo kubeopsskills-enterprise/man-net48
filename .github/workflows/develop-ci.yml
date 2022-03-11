@@ -14,97 +14,96 @@ env:
   UNIT_TEST_CSPROJ: .\UnitTestProject1\UnitTestProject1.csproj
     
 jobs:
-  # unit_tests:
-  #   name: Unit tests
-  #   runs-on: windows-2019
+  unit_tests:
+    name: Unit tests
+    runs-on: windows-2019
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Setup MSBuild path
-  #       uses: microsoft/setup-msbuild@v1.0.2
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
 
-  #     - name: Setup NuGet
-  #       uses: NuGet/setup-nuget@v1.0.5
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
 
-  #     - uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           %userprofile%\.nuget\packages
-  #           %localappdata%\NuGet\v3-cache
-  #           %temp%\NuGetScratch
-  #           ${{ github.workspace }}\packages
-  #           %localappdata%\NuGet\plugins-cache
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-  #     - name: Restore NuGet packages
-  #       run: nuget restore
+      - name: Restore NuGet packages
+        run: nuget restore
 
-  #     - name: Build unit test project
-  #       id: built-unit-test-project
-  #       run: |
-  #         $dll_path = ((msbuild $env:UNIT_TEST_CSPROJ /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
-  #         echo "::set-output name=DLL_PATH::$dll_path"
+      - name: Build unit test project
+        id: built-unit-test-project
+        run: |
+          $dll_path = ((msbuild $env:UNIT_TEST_CSPROJ /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
+          echo "::set-output name=DLL_PATH::$dll_path"
 
-  #     - name: Run unit tests
-  #       run: |
-  #         $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
-  #         $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
-  #         $env:Path += ';'+$path
-  #         mkdir unit-test-results
-  #         vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
-  #         cat unit-test-results.txt
+      - name: Run unit tests
+        run: |
+          $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
+          $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
+          $env:Path += ';'+$path
+          vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
+          cat unit-test-results.txt
 
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: unit-test-results
-  #         path: unit-test-results.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results
+          path: unit-test-results.txt
 
-  # codeql:
-  #     name: CodeQL
-  #     runs-on: windows-2019
-  #     permissions:
-  #       actions: read
-  #       contents: read
-  #       security-events: write
+  codeql:
+      name: CodeQL
+      runs-on: windows-2019
+      permissions:
+        actions: read
+        contents: read
+        security-events: write
 
-  #     strategy:
-  #       fail-fast: false
-  #       matrix:
-  #         language: [ 'javascript', 'csharp' ]
+      strategy:
+        fail-fast: false
+        matrix:
+          language: [ 'javascript', 'csharp' ]
 
-  #     steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+      steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - name: Initialize CodeQL
-  #       uses: github/codeql-action/init@v1
-  #       with:
-  #         languages: ${{ matrix.language }}
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
 
-  #     - uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           %userprofile%\.nuget\packages
-  #           %localappdata%\NuGet\v3-cache
-  #           %temp%\NuGetScratch
-  #           ${{ github.workspace }}\packages
-  #           %localappdata%\NuGet\plugins-cache
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-  #     - name: Autobuild
-  #       uses: github/codeql-action/autobuild@v1
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v1
 
-  #     - name: Perform CodeQL Analysis
-  #       uses: github/codeql-action/analyze@v1
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
 
   build:
     name: Build
-    # needs: [unit_tests, codeql]
+    needs: [unit_tests, codeql]
     runs-on: windows-2019
     if: github.event_name != 'pull_request'
     
@@ -137,8 +136,6 @@ jobs:
 
       - name: Upload artifact for deployment job
         run: |
-          dir $env:GITHUB_WORKSPACE"\published\"
-          dir $env:GITHUB_WORKSPACE"\published\bin"
           7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
           az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           rm .\artifact-$env:GITHUB_SHA.zip
@@ -153,22 +150,22 @@ jobs:
           git commit -m "save latest artifact build name on Develop workflow [skip ci]"
           git push
 
-  # repository_dispatch:
-  #   name: Repository dispatch
-  #   needs: build
-  #   runs-on: ubuntu-latest
+  repository_dispatch:
+    name: Repository dispatch
+    needs: build
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         ref: 'develop'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'develop'
 
-  #     - name: Repository dispatch
-  #       run: |
-  #         DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
-  #         echo $DISPATCH_BODY
-  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-  #           --header 'accept: application/vnd.github.v3+json' \
-  #           --header 'Content-Type: application/json' \
-  #           --data-raw "$DISPATCH_BODY"
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.github_sha |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
