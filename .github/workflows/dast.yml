@@ -2,7 +2,7 @@ name: DAST
 
 on:
   repository_dispatch:
-    types: [dast-ais-net48-repository-dispatch]
+    types: [dast-man-net48-repository-dispatch]
 
 env:
   SIT_SITE: "https://man-net48-sit.azurewebsites.net"
