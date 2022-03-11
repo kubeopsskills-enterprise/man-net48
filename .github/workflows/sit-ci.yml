@@ -30,6 +30,10 @@ jobs:
         run: |
           echo ${{ github.event.base_ref }}
 
+      - name: Investigate tagging
+        run: |
+          echo "Tags: ${{ github.event.inputs.tags }}" 
+
   #     - name: Retrieve latest artifact name
   #       id: artifact_name
   #       run: |
