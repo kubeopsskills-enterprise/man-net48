@@ -1,1 +1,1 @@
-{"event_type":"event", "client_payload": {"github_sha": "sha"}}
+{"event_type":"event", "client_payload": {"git_reference": "reference"}}
