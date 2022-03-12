@@ -28,7 +28,7 @@ jobs:
 
   repository_dispatch:
     name: Repository dispatch
-    needs: [retrieve_latest_artifact, duplicate_artifact]
+    needs: [zap_scan]
     runs-on: ubuntu-latest
 
     steps:
