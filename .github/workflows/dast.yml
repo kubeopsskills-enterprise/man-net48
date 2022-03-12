@@ -1,0 +1,47 @@
+name: DAST
+
+on:
+  repository_dispatch:
+    types: [dast-man-net48-repository-dispatch]
+
+env:
+  SIT_SITE: "http://man-net48-sit.azurewebsites.net/"
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-20.04
+    name: Scan the web application with DAST
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.git_reference }}
+
+      - name: ZAP Scan
+        uses: zaproxy/action-full-scan@v0.3.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: ${{ env.SIT_SITE }}
+          rules_file_name: '.zap/rules.tsv'
+          fail_action: true
+
+  repository_dispatch:
+    name: Repository dispatch
+    needs: [zap_scan]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.git_reference }}
+
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "integration-test-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"

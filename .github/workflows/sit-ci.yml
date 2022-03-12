@@ -12,41 +12,81 @@ on:
 
 jobs:
   retrieve_latest_artifact:
-    name: Retrieve latest artifact
+    name: Retrieve reference
     runs-on: ubuntu-latest
     if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    outputs:
+      retrieve_tagging: ${{ steps.retrieve_tagging.outputs.test }}
+      workflow_dispatch: ${{ steps.workflow_dispatch.outputs.test }}
     
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (Triggered by tagging)
+        if: github.event.base_ref=='refs/heads/main'
         uses: actions/checkout@v3
-        # with:
-        #   ref: ${{ inputs.reference }}
+        with:
+          ref: ${{ github.ref_name }}
 
-      - name: Investigate tagging
+      - name: Checkout repository (Triggered by workflow dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tags }}
+        
+      - name: Retrieve the tag (Tagging)
+        id: retrieve_tagging
+        if: github.event.base_ref=='refs/heads/main'
         run: |
+          echo "::set-output name=test::${{ github.ref_name }}"
           echo ${{ github.ref_name }}
 
-  #     - name: Retrieve latest artifact name
-  #       id: artifact_name
-  #       run: |
-  #         ARTIFACT_NAME=$(cat latest-build-artifact)
-  #         echo "::set-output name=artifact_name::"$ARTIFACT_NAME
-  #     - name: Extract GitHub SHA
-  #       id: sha
-  #       run: |
-  #         ARTIFACT_NAME=$(cat latest-build-artifact)
-  #         SHA=$(echo $ARTIFACT_NAME | awk 'match($0,/artifact-([a-z0-9]*).zip/,a) {print a[1]}')
-  #         echo "::set-output name=sha::"$SHA
+      - name: Retrieve the tag (Workflow Dispatch)
+        id: workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "::set-output name=test::${{ github.event.inputs.tags }}"
+          echo ${{ github.event.inputs.tags }}
 
-  # dispatch-repository:
-  #   name: Repository dispatch
-  #   needs: retrieve_latest_artifact
-  #   if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
+  duplicate_artifact:
+    name: Duplicate the artifact and name it after retrieve reference
+    needs: retrieve_latest_artifact
+    runs-on: ubuntu-latest
 
-  #   uses: kubeopsskills-enterprise/ais-share-pipeline/.github/workflows/repository-dispatch.yml@main
-  #   with:
-  #     REPOSITORY: 'kubeopsskills-enterprise/man-ng-pipeline'
-  #     EVENT_TYPE: 'sit-ais-ng-repository-dispatch'
-  #     SHA: ${{ needs.retrieve_latest_artifact.outputs.sha }}
-  #   secrets:
-  #     PAT : ${{ secrets.ORG_PAT  }}
+    steps:
+      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.retrieved_reference }}
+
+      - name: Duplicate latest build artifact and name it with the retrieved reference
+        run: |
+          ARTIFACT_NAME=$(cat latest-build-artifact)
+          az storage blob download -c "build" -n ${ARTIFACT_NAME} -f ${GITHUB_WORKSPACE}/${ARTIFACT_NAME} --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          ls
+          mv ${ARTIFACT_NAME} artifact-${{ env.retrieved_reference }}.zip
+          ls
+          az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}/artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+
+  repository_dispatch:
+    name: Repository dispatch
+    needs: [retrieve_latest_artifact, duplicate_artifact]
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.retrieved_reference }}
+
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
