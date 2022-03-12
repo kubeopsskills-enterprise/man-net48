@@ -62,6 +62,7 @@ jobs:
 
       - name: Duplicate latest build artifact and name it with the retrieved reference
         run: |
+          az storage blob download -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           ARTIFACT_NAME=$(cat latest-build-artifact)
           az storage blob download -c "build" -n ${ARTIFACT_NAME} -f ${GITHUB_WORKSPACE}/${ARTIFACT_NAME} --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
           ls
