@@ -26,22 +26,22 @@ jobs:
           rules_file_name: '.zap/rules.tsv'
           fail_action: true
 
-  # repository_dispatch:
-  #   name: Repository dispatch
-  #   needs: build
-  #   runs-on: ubuntu-latest
+  repository_dispatch:
+    name: Repository dispatch
+    needs: [retrieve_latest_artifact, duplicate_artifact]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.client_payload.git_reference }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.git_reference }}
 
-  #     - name: Repository dispatch
-  #       run: |
-  #         DISPATCH_BODY=$(jq '.event_type |= "integration-test-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
-  #         echo $DISPATCH_BODY
-  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-  #           --header 'accept: application/vnd.github.v3+json' \
-  #           --header 'Content-Type: application/json' \
-  #           --data-raw "$DISPATCH_BODY"
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "integration-test-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
