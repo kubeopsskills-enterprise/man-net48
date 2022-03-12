@@ -141,14 +141,19 @@ jobs:
           rm .\artifact-$env:GITHUB_SHA.zip
           Remove-Item .\published\  -Recurse
 
-      - name: Save artifact name to develop branch
+      - name: Save latest artifact name
         run: |
           echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "save latest artifact build name on Develop workflow [skip ci]"
-          git push
+          az storage blob upload -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+
+      # - name: Save latest artifact name
+      #   run: |
+      #     echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "save latest artifact build name on Develop workflow [skip ci]"
+      #     git push
 
   repository_dispatch:
     name: Repository dispatch
