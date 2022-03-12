@@ -51,6 +51,9 @@ jobs:
     name: Duplicate the artifact and name it after retrieve reference
     needs: retrieve_latest_artifact
     runs-on: ubuntu-latest
+    
+    # outputs:
+    #   retrieved_reference: ${{ steps.retrieve_tagging.outputs.test }}
 
     steps:
       - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
@@ -72,7 +75,7 @@ jobs:
 
   repository_dispatch:
     name: Repository dispatch
-    needs: duplicate_artifact
+    needs: [retrieve_latest_artifact, duplicate_artifact]
     runs-on: ubuntu-latest
 
     steps:
