@@ -144,7 +144,7 @@ jobs:
       - name: Save latest artifact name
         run: |
           echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
-          az storage blob upload -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+          az storage blob upload -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}" --overwrite
 
       # - name: Save latest artifact name
       #   run: |
