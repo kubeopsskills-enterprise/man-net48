@@ -72,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript' ]
+        language: [ 'javascript', 'csharp' ]
 
     steps:
     - name: Checkout repository
@@ -166,6 +166,7 @@ jobs:
 
   repository_dispatch:
     name: Repository dispatch
+    needs: [unit_tests, codeql]
     runs-on: ubuntu-latest
 
     steps:
