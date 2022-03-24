@@ -36,8 +36,8 @@ jobs:
       - name: Set env (Triggered by tagging)
         if: github.event.base_ref=='refs/heads/main'
         run: |
-          echo ("RELEASE_VERSION=" + ${{ github.ref_name }})
-          echo ("RELEASE_VERSION=" + ${{ github.ref_name }}) >> $env:GITHUB_ENV
+          echo "RELEASE_VERSION=${{ github.ref_name }}"
+          echo "RELEASE_VERSION=${{ github.ref_name }}" >> $env:GITHUB_ENV
 
       - name: Set env (Triggered by workflow dispatch)
         run: |
