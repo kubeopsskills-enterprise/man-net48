@@ -10,7 +10,6 @@ on:
   workflow_dispatch:
 
 env:
-  APP_CSPROJ: .\SimpleNetFrame\SimpleNetFrame.csproj
   UNIT_TEST_CSPROJ: .\UnitTestProject1\UnitTestProject1.csproj
     
 jobs:
@@ -62,89 +61,98 @@ jobs:
           path: unit-test-results.txt
 
   codeql:
-      name: CodeQL
-      runs-on: windows-2019
-      permissions:
-        actions: read
-        contents: read
-        security-events: write
-
-      strategy:
-        fail-fast: false
-        matrix:
-          language: [ 'javascript', 'csharp' ]
-
-      steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
-
-      - uses: actions/cache@v2
-        with:
-          path: |
-            %userprofile%\.nuget\packages
-            %localappdata%\NuGet\v3-cache
-            %temp%\NuGetScratch
-            ${{ github.workspace }}\packages
-            %localappdata%\NuGet\plugins-cache
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
-
-  build:
-    name: Build
-    needs: [unit_tests, codeql]
+    name: CodeQL
     runs-on: windows-2019
-    if: github.event_name != 'pull_request'
-    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'csharp' ]
+
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+    - uses: actions/cache@v2
+      with:
+        path: |
+          %userprofile%\.nuget\packages
+          %localappdata%\NuGet\v3-cache
+          %temp%\NuGetScratch
+          ${{ github.workspace }}\packages
+          %localappdata%\NuGet\plugins-cache
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
+    # - name: CodeQL Quality Gate
+    #   uses: kubeopsskills-enterprise/quality-gate-action@main
+    #   with:
+    #     repository: kubeopsskills-enterprise/man-net48
+    #     severity: critical
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.ORG_PAT }}
+
+
+  # build:
+  #   name: Build
+  #   needs: [unit_tests, codeql]
+  #   runs-on: windows-2019
+  #   if: github.event_name != 'pull_request'
     
-      - uses: actions/cache@v2
-        with:
-          path: |
-            %userprofile%\.nuget\packages
-            %localappdata%\NuGet\v3-cache
-            %temp%\NuGetScratch
-            ${{ github.workspace }}\packages
-            %localappdata%\NuGet\plugins-cache
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Restore NuGet packages
-        run: nuget restore
+  #     - name: Setup MSBuild path
+  #       uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Publish to folder
-        run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+  #     - name: Setup NuGet
+  #       uses: NuGet/setup-nuget@v1.0.5
+    
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: |
+  #           %userprofile%\.nuget\packages
+  #           %localappdata%\NuGet\v3-cache
+  #           %temp%\NuGetScratch
+  #           ${{ github.workspace }}\packages
+  #           %localappdata%\NuGet\plugins-cache
+  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-nuget-
 
-      - name: Upload artifact for deployment job
-        run: |
-          7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
-          az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-          rm .\artifact-$env:GITHUB_SHA.zip
-          Remove-Item .\published\  -Recurse
+  #     - name: Restore NuGet packages
+  #       run: nuget restore
 
-      - name: Save latest artifact name
-        run: |
-          echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
-          az storage blob upload -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}" --overwrite
+  #     - name: Publish to folder
+  #       run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+
+      # - name: Upload artifact for deployment job
+      #   run: |
+      #     7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
+      #     az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+      #     rm .\artifact-$env:GITHUB_SHA.zip
+      #     Remove-Item .\published\  -Recurse
+
+      # - name: Save latest artifact name
+      #   run: |
+      #     echo artifact-$env:GITHUB_SHA.zip > latest-build-artifact
+      #     az storage blob upload -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}" --overwrite
 
       # - name: Save latest artifact name
       #   run: |
@@ -157,7 +165,7 @@ jobs:
 
   repository_dispatch:
     name: Repository dispatch
-    needs: build
+    needs: [unit_tests, codeql]
     runs-on: ubuntu-latest
 
     steps:
