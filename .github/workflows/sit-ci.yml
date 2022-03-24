@@ -41,8 +41,8 @@ jobs:
 
       - name: Set env (Triggered by workflow dispatch)
         run: |
-          echo ("RELEASE_VERSION=" + ${{ github.event.inputs.tags }})
-          echo ("RELEASE_VERSION=" + ${{ github.event.inputs.tags }}) >> $env:GITHUB_ENV
+          echo "RELEASE_VERSION=${{ github.event.inputs.tags }}"
+          echo "RELEASE_VERSION=${{ github.event.inputs.tags }}" >> $env:GITHUB_ENV
           # $env:RELEASE_VERSION = "${{ github.event.inputs.tags }}"
         
       - name: Setup MSBuild path
