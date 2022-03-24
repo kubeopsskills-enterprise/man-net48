@@ -10,15 +10,14 @@ on:
         description: 'tags'
         required: true 
 
-jobs:
-  retrieve_latest_artifact:
-    name: Retrieve reference
-    runs-on: ubuntu-latest
-    if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
+env:
+  APP_CSPROJ: .\SimpleNetFrame\SimpleNetFrame.csproj
 
-    outputs:
-      retrieve_tagging: ${{ steps.retrieve_tagging.outputs.test }}
-      workflow_dispatch: ${{ steps.workflow_dispatch.outputs.test }}
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
     
     steps:
       - name: Checkout repository (Triggered by tagging)
@@ -32,62 +31,139 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.tags }}
-        
-      - name: Retrieve the tag (Tagging)
-        id: retrieve_tagging
+
+      - name: Set env (Triggered by tagging)
         if: github.event.base_ref=='refs/heads/main'
         run: |
-          echo "::set-output name=test::${{ github.ref_name }}"
-          echo ${{ github.ref_name }}
+          $env:RELEASE_VERSION = ${{ github.ref_name }}
 
-      - name: Retrieve the tag (Workflow Dispatch)
-        id: workflow_dispatch
-        if: github.event_name == 'workflow_dispatch'
+      - name: Set env (Triggered by workflow dispatch)
         run: |
-          echo "::set-output name=test::${{ github.event.inputs.tags }}"
-          echo ${{ github.event.inputs.tags }}
+          $env:RELEASE_VERSION = ${{ github.event.inputs.tags }}
+        
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
 
-  duplicate_artifact:
-    name: Duplicate the artifact and name it after retrieve reference
-    needs: retrieve_latest_artifact
-    runs-on: ubuntu-latest
-
-    steps:
-      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+    
+      - uses: actions/cache@v2
         with:
-          ref: ${{ env.retrieved_reference }}
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-      - name: Duplicate latest build artifact and name it with the retrieved reference
+      - name: Restore NuGet packages
+        run: nuget restore
+
+      - name: Publish to folder
+        run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
+
+      - name: Packing Arifact Files
         run: |
-          az storage blob download -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-          ARTIFACT_NAME=$(cat latest-build-artifact)
-          az storage blob download -c "build" -n ${ARTIFACT_NAME} -f ${GITHUB_WORKSPACE}/${ARTIFACT_NAME} --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-          ls
-          mv ${ARTIFACT_NAME} artifact-${{ env.retrieved_reference }}.zip
-          ls
-          az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}/artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
-
-  repository_dispatch:
-    name: Repository dispatch
-    needs: [retrieve_latest_artifact, duplicate_artifact]
-    runs-on: ubuntu-latest
-
-    steps:
-      - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
-
-      - uses: actions/checkout@v3
+          7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
+      
+      - name: Upload Artifact Release
+        uses: softprops/action-gh-release@v1
         with:
-          ref: ${{ env.retrieved_reference }}
+          files: ./artifact-man-net48-$env:RELEASE_VERSION.zip
 
-      - name: Repository dispatch
-        run: |
-          DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
-          echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-            --header 'accept: application/vnd.github.v3+json' \
-            --header 'Content-Type: application/json' \
-            --data-raw "$DISPATCH_BODY"
+      # - name: Upload artifact for deployment job
+      #   run: |
+      #     7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
+      #     az storage blob upload -c build -n artifact-$env:GITHUB_SHA.zip -f $env:GITHUB_WORKSPACE\artifact-$env:GITHUB_SHA.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+      #     rm .\artifact-$env:GITHUB_SHA.zip
+      #     Remove-Item .\published\  -Recurse
+
+      # - name: Upload artifact for deployment job
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: net48-app
+      #     path: .\published\
+
+  # retrieve_latest_artifact:
+  #   name: Retrieve reference
+  #   runs-on: ubuntu-latest
+  #   if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+  #   outputs:
+  #     retrieve_tagging: ${{ steps.retrieve_tagging.outputs.test }}
+  #     workflow_dispatch: ${{ steps.workflow_dispatch.outputs.test }}
+    
+  #   steps:
+  #     - name: Checkout repository (Triggered by tagging)
+  #       if: github.event.base_ref=='refs/heads/main'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.ref_name }}
+
+  #     - name: Checkout repository (Triggered by workflow dispatch)
+  #       if: github.event_name == 'workflow_dispatch'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.inputs.tags }}
+        
+  #     - name: Retrieve the tag (Tagging)
+  #       id: retrieve_tagging
+  #       if: github.event.base_ref=='refs/heads/main'
+  #       run: |
+  #         echo "::set-output name=test::${{ github.ref_name }}"
+  #         echo ${{ github.ref_name }}
+
+  #     - name: Retrieve the tag (Workflow Dispatch)
+  #       id: workflow_dispatch
+  #       if: github.event_name == 'workflow_dispatch'
+  #       run: |
+  #         echo "::set-output name=test::${{ github.event.inputs.tags }}"
+  #         echo ${{ github.event.inputs.tags }}
+
+  # duplicate_artifact:
+  #   name: Duplicate the artifact and name it after retrieve reference
+  #   needs: retrieve_latest_artifact
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ env.retrieved_reference }}
+
+  #     - name: Duplicate latest build artifact and name it with the retrieved reference
+  #       run: |
+  #         az storage blob download -c build -n latest-build-artifact -f $env:GITHUB_WORKSPACE\latest-build-artifact --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+  #         ARTIFACT_NAME=$(cat latest-build-artifact)
+  #         az storage blob download -c "build" -n ${ARTIFACT_NAME} -f ${GITHUB_WORKSPACE}/${ARTIFACT_NAME} --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+  #         ls
+  #         mv ${ARTIFACT_NAME} artifact-${{ env.retrieved_reference }}.zip
+  #         ls
+  #         az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}/artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
+
+  # repository_dispatch:
+  #   name: Repository dispatch
+  #   needs: [retrieve_latest_artifact, duplicate_artifact]
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ env.retrieved_reference }}
+
+  #     - name: Repository dispatch
+  #       run: |
+  #         DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
+  #         echo $DISPATCH_BODY
+  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+  #           --header 'accept: application/vnd.github.v3+json' \
+  #           --header 'Content-Type: application/json' \
+  #           --data-raw "$DISPATCH_BODY"
