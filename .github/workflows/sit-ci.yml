@@ -71,7 +71,7 @@ jobs:
 
       - name: Packing Arifact Files
         run: |
-          7z a artifact-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
+          7z a artifact-man-net48-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
           ls
 
       - run: echo $env:RELEASE_VERSION
@@ -79,8 +79,8 @@ jobs:
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifact-man-net48-$env:RELEASE_VERSION.zip
-          tag_name: $env:RELEASE_VERSION
+          files: ./artifact-man-net48-${env:RELEASE_VERSION}.zip
+          tag_name: ${env:RELEASE_VERSION}
 
       # - name: Upload artifact for deployment job
       #   run: |
