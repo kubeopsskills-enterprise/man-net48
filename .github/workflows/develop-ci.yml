@@ -72,7 +72,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript', 'csharp' ]
+        # language: [ 'javascript', 'csharp' ]
+        language: [ 'javascript' ]
 
     steps:
     - name: Checkout repository
@@ -103,6 +104,8 @@ jobs:
 
     - name: CodeQL Quality Gate
       uses: kubeopsskills-enterprise/quality-gate-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.ORG_PAT }}
 
 
   # build:
