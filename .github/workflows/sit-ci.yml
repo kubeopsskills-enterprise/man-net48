@@ -37,13 +37,11 @@ jobs:
         run: |
           echo ("RELEASE_VERSION=" + ${{ github.ref_name }})
           echo ("RELEASE_VERSION=" + ${{ github.ref_name }}) >> $env:GITHUB_ENV
-          # $env:RELEASE_VERSION = "${{ github.ref_name }}"
 
       - name: Set env (Triggered by workflow dispatch)
         run: |
           echo "RELEASE_VERSION=${{ github.event.inputs.tags }}"
           echo "RELEASE_VERSION=${{ github.event.inputs.tags }}" >> $env:GITHUB_ENV
-          # $env:RELEASE_VERSION = "${{ github.event.inputs.tags }}"
         
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v1.0.2
@@ -80,7 +78,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: .\artifact-man-net48-v1.0.1.zip
-          tag_name: v1.0.1
+          tag_name: ${{ env:RELEASE_VERSION }}
 
       # - name: Upload artifact for deployment job
       #   run: |
