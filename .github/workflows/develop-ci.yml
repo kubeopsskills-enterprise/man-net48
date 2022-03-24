@@ -104,6 +104,9 @@ jobs:
 
     - name: CodeQL Quality Gate
       uses: kubeopsskills-enterprise/quality-gate-action@v1
+      with:
+        repository: kubeopsskills-enterprise/man-net48
+        severity: critical
       env:
         GITHUB_TOKEN: ${{ secrets.ORG_PAT }}
 
