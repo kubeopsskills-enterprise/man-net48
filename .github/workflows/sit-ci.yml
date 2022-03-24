@@ -20,6 +20,9 @@ jobs:
     runs-on: windows-2019
     if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
     
+    outputs:
+      release_version: ${{ steps.packing-artifact-release.outputs.release_version }}
+
     steps:
       - name: Checkout repository (Triggered by tagging)
         if: github.event.base_ref=='refs/heads/main'
@@ -69,8 +72,10 @@ jobs:
         run: msbuild $env:APP_CSPROJ /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir=$env:GITHUB_WORKSPACE"\published\"
 
       - name: Packing Arifact Files
+        id: packing-artifact-release
         run: |
           7z a artifact-$env:APP_NAME-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
+          echo "::set-output name=release_version::${{ github.ref_name }}"
 
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
@@ -150,24 +155,24 @@ jobs:
   #         ls
   #         az storage blob upload -c build -n artifact-${{ env.retrieved_reference }}.zip -f ${GITHUB_WORKSPACE}/artifact-${{ env.retrieved_reference }}.zip --connection-string "${{ secrets.STORAGE_ACCOUNT_CONNECTION_STRING }}"
 
-  # repository_dispatch:
-  #   name: Repository dispatch
-  #   needs: [retrieve_latest_artifact, duplicate_artifact]
-  #   runs-on: ubuntu-latest
+  repository_dispatch:
+    name: Repository dispatch
+    needs: [build]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - run: echo "retrieved_reference=${{needs.retrieve_latest_artifact.outputs.retrieve_tagging}}${{needs.retrieve_latest_artifact.outputs.workflow_dispatch}}" >> $GITHUB_ENV
+    steps:
+      - run: echo "retrieved_reference=${{needs.build.outputs.release_version}}" >> $GITHUB_ENV
 
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ env.retrieved_reference }}
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.retrieved_reference }}
 
-  #     - name: Repository dispatch
-  #       run: |
-  #         DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
-  #         echo $DISPATCH_BODY
-  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
-  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-  #           --header 'accept: application/vnd.github.v3+json' \
-  #           --header 'Content-Type: application/json' \
-  #           --data-raw "$DISPATCH_BODY"
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
