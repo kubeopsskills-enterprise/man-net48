@@ -10,7 +10,6 @@ on:
   workflow_dispatch:
 
 env:
-  APP_CSPROJ: .\SimpleNetFrame\SimpleNetFrame.csproj
   UNIT_TEST_CSPROJ: .\UnitTestProject1\UnitTestProject1.csproj
     
 jobs:
