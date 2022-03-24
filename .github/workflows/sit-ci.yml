@@ -71,8 +71,9 @@ jobs:
 
       - name: Packing Arifact Files
         run: |
-          7z a artifact-$env:GITHUB_SHA.zip $env:GITHUB_WORKSPACE"\published\*"
-      
+          7z a artifact-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
+          ls
+
       - run: echo $env:RELEASE_VERSION
 
       - name: Upload Artifact Release
