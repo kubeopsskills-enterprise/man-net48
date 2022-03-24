@@ -35,11 +35,11 @@ jobs:
       - name: Set env (Triggered by tagging)
         if: github.event.base_ref=='refs/heads/main'
         run: |
-          $env:RELEASE_VERSION = ${{ github.ref_name }}
+          $env:RELEASE_VERSION = "${{ github.ref_name }}"
 
       - name: Set env (Triggered by workflow dispatch)
         run: |
-          $env:RELEASE_VERSION = ${{ github.event.inputs.tags }}
+          $env:RELEASE_VERSION = "${{ github.event.inputs.tags }}"
         
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v1.0.2
