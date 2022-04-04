@@ -76,8 +76,8 @@ jobs:
         id: packing-artifact-release
         run: |
           7z a artifact-$env:APP_NAME-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
-          echo "::set-output name=release_version::${{ github.ref_name }}"
-
+          echo "::set-output name=release_version::"$env:RELEASE_VERSION
+          
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
         with:
