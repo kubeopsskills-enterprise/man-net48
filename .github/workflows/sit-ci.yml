@@ -74,7 +74,7 @@ jobs:
           echo "::set-output name=release_version::"${{ env.RELEASE_VERSION }}
 
       - id: step1
-        run: echo "::set-output name=test::"${{ env.RELEASE_VERSION }}
+        run: echo "::set-output name=test::${{ env.RELEASE_VERSION }}"
           
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
