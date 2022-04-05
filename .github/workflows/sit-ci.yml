@@ -36,7 +36,6 @@ jobs:
           echo "RELEASE_VERSION=${{ github.event.inputs.tags }}" >> $env:GITHUB_ENV
 
       - name: Checkout repository
-        if: github.event.base_ref=='refs/heads/main'
         uses: actions/checkout@v3
         with:
           ref: ${{ env.RELEASE_VERSION }}
