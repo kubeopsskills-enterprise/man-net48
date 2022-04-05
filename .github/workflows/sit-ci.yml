@@ -11,7 +11,6 @@ on:
         required: true 
 
 env:
-  APP_NAME: man-net48
   APP_CSPROJ: .\SimpleNetFrame\SimpleNetFrame.csproj
 
 jobs:
@@ -81,7 +80,7 @@ jobs:
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
         with:
-          files: .\artifact-${{ env.APP_NAME }}-${{ env.RELEASE_VERSION }}.zip
+          files: .\artifact-${{ secrets.MAN_NET48_APP_NAME }}-${{ env.RELEASE_VERSION }}.zip
           tag_name: ${{ env.RELEASE_VERSION }}
 
   repository_dispatch:
@@ -98,9 +97,9 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "sit-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          DISPATCH_BODY=$(jq '.event_type |= "sit-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
           echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
             --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
             --header 'accept: application/vnd.github.v3+json' \
             --header 'Content-Type: application/json' \
