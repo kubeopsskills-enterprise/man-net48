@@ -20,7 +20,7 @@ jobs:
     if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
     
     outputs:
-      release_version: ${{ steps.packing-artifact-release.outputs.release_version }}
+      output: ${{ steps.packing-artifact-release.outputs.release_version }}
 
     steps:
       - name: Set env (Triggered by tagging)
@@ -82,8 +82,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "retrieved_reference=${{needs.build.outputs.release_version}}" >> $GITHUB_ENV
-      - run: echo ${{needs.build.outputs.release_version}}
+      - run: echo "retrieved_reference=${{needs.build.outputs.output}}" >> $GITHUB_ENV
+      - run: echo ${{needs.build.outputs.output}}
 
       # - uses: actions/checkout@v3
       #   with:
