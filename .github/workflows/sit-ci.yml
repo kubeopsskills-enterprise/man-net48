@@ -19,11 +19,8 @@ jobs:
     runs-on: windows-2019
     if: github.event.base_ref=='refs/heads/main' || github.event_name == 'workflow_dispatch'
     
-    # outputs:
-    #   output: ${{ steps.packing-artifact-release.outputs.release_version }}
-
     outputs:
-      output1: ${{ steps.step1.outputs.test }}
+      output: ${{ steps.packing-artifact-release.outputs.release_version }}
 
     steps:
       - name: Set env (Triggered by tagging)
@@ -71,10 +68,7 @@ jobs:
         id: packing-artifact-release
         run: |
           7z a artifact-${{ secrets.MAN_NET48_APP_NAME }}-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
-          echo "::set-output name=release_version::"${{ env.RELEASE_VERSION }}
-
-      - id: step1
-        run: echo "::set-output name=test::${{ env.RELEASE_VERSION }}"
+          echo "::set-output name=release_version::${{ env.RELEASE_VERSION }}"
           
       - name: Upload Artifact Release
         uses: softprops/action-gh-release@v1
@@ -88,8 +82,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "retrieved_reference=${{needs.build.outputs.output1}}" >> $GITHUB_ENV
-      - run: echo ${{needs.build.outputs.output1}}
+      - run: echo "retrieved_reference=${{needs.build.outputs.output}}" >> $GITHUB_ENV
+      - run: echo ${{needs.build.outputs.output}}
 
       # - uses: actions/checkout@v3
       #   with:
