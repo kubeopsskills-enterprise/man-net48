@@ -101,6 +101,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
   repository_dispatch:
+    if: github.event_name != 'pull_request'
     name: Repository dispatch
     needs: [unit_tests, codeql]
     runs-on: ubuntu-latest

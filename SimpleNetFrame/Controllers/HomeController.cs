@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Configuration;
 
 namespace SimpleNetFrame.Controllers
 {
@@ -11,6 +12,8 @@ namespace SimpleNetFrame.Controllers
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
+
+            ViewBag.Secret = ConfigurationManager.AppSettings["SomeSecret"];
 
             return View();
         }
