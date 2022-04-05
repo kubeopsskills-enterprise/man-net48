@@ -38,9 +38,9 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "integration-test-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
+          DISPATCH_BODY=$(jq '.event_type |= "integration-test-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ github.event.client_payload.git_reference }}'"' ./.github/template/env-repository-dispatch.json)
           echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
             --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
             --header 'accept: application/vnd.github.v3+json' \
             --header 'Content-Type: application/json' \

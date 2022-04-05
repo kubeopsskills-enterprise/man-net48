@@ -101,6 +101,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
   repository_dispatch:
+    if: github.event_name != 'pull_request'
     name: Repository dispatch
     needs: [unit_tests, codeql]
     runs-on: ubuntu-latest
@@ -112,9 +113,9 @@ jobs:
 
       - name: Repository dispatch
         run: |
-          DISPATCH_BODY=$(jq '.event_type |= "dev-man-net48-repository-dispatch" | .client_payload.git_reference |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
+          DISPATCH_BODY=$(jq '.event_type |= "dev-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
           echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/man-net48-pipeline/dispatches' \
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
             --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
             --header 'accept: application/vnd.github.v3+json' \
             --header 'Content-Type: application/json' \
