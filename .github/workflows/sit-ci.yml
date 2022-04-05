@@ -68,7 +68,7 @@ jobs:
       - name: Packing Arifact Files
         id: packing-artifact-release
         run: |
-          7z a artifact-$env:APP_NAME-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
+          7z a artifact-${{ secrets.MAN_NET48_APP_NAME }}-$env:RELEASE_VERSION.zip $env:GITHUB_WORKSPACE"\published\*"
           echo "::set-output name=release_version::"$env:RELEASE_VERSION
           
       - name: Upload Artifact Release
