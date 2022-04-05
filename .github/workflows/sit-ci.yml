@@ -83,17 +83,18 @@ jobs:
 
     steps:
       - run: echo "retrieved_reference=${{needs.build.outputs.release_version}}" >> $GITHUB_ENV
+      - run: echo ${{needs.build.outputs.release_version}}
 
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ env.retrieved_reference }}
+      # - uses: actions/checkout@v3
+      #   with:
+      #     ref: ${{ env.retrieved_reference }}
 
-      - name: Repository dispatch
-        run: |
-          DISPATCH_BODY=$(jq '.event_type |= "sit-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
-          echo $DISPATCH_BODY
-          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
-            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-            --header 'accept: application/vnd.github.v3+json' \
-            --header 'Content-Type: application/json' \
-            --data-raw "$DISPATCH_BODY"
+      # - name: Repository dispatch
+      #   run: |
+      #     DISPATCH_BODY=$(jq '.event_type |= "sit-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${{ env.retrieved_reference }}'"' ./.github/template/env-repository-dispatch.json)
+      #     echo $DISPATCH_BODY
+      #     curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
+      #       --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+      #       --header 'accept: application/vnd.github.v3+json' \
+      #       --header 'Content-Type: application/json' \
+      #       --data-raw "$DISPATCH_BODY"
