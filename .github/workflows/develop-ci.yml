@@ -100,20 +100,24 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
 
+  quality_gate:
+    runs-on: ubuntu-latest
+    name: CodeQL Quality Gate
+    needs: codeql
+
+    steps:
     - name: Quality Gate Check
-      uses: kubeopsskills-enterprise/quality-gate-action@main
+      uses: kubeopsskills-enterprise/k-quality-gate-action@main
       with:
         repository: kubeopsskills-enterprise/man-net48
         severity: critical
       env:
         GITHUB_TOKEN: ${{ secrets.ORG_PAT_OWNER }}
 
-
-
   # repository_dispatch:
   #   if: github.event_name != 'pull_request'
   #   name: Repository dispatch
-  #   needs: [unit_tests, codeql]
+  #   needs: [unit_tests, codeql, quality_gate]
   #   runs-on: ubuntu-latest
 
   #   steps:
