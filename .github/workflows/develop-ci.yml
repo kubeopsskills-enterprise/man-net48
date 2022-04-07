@@ -106,7 +106,7 @@ jobs:
         repository: kubeopsskills-enterprise/man-net48
         severity: critical
       env:
-        GITHUB_TOKEN: ${{ secrets.ORG_PAT }}
+        GITHUB_TOKEN: ${{ secrets.ORG_PAT_OWNER }}
 
 
 
