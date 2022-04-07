@@ -13,52 +13,52 @@ env:
   UNIT_TEST_CSPROJ: .\UnitTestProject1\UnitTestProject1.csproj
     
 jobs:
-  # unit_tests:
-  #   name: Unit tests
-  #   runs-on: windows-2019
+  unit_tests:
+    name: Unit tests
+    runs-on: windows-2019
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Setup MSBuild path
-  #       uses: microsoft/setup-msbuild@v1.0.2
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
 
-  #     - name: Setup NuGet
-  #       uses: NuGet/setup-nuget@v1.0.5
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
 
-  #     - uses: actions/cache@v2
-  #       with:
-  #         path: |
-  #           %userprofile%\.nuget\packages
-  #           %localappdata%\NuGet\v3-cache
-  #           %temp%\NuGetScratch
-  #           ${{ github.workspace }}\packages
-  #           %localappdata%\NuGet\plugins-cache
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
+      - uses: actions/cache@v2
+        with:
+          path: |
+            %userprofile%\.nuget\packages
+            %localappdata%\NuGet\v3-cache
+            %temp%\NuGetScratch
+            ${{ github.workspace }}\packages
+            %localappdata%\NuGet\plugins-cache
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-  #     - name: Restore NuGet packages
-  #       run: nuget restore
+      - name: Restore NuGet packages
+        run: nuget restore
 
-  #     - name: Build unit test project
-  #       id: built-unit-test-project
-  #       run: |
-  #         $dll_path = ((msbuild $env:UNIT_TEST_CSPROJ /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
-  #         echo "::set-output name=DLL_PATH::$dll_path"
+      - name: Build unit test project
+        id: built-unit-test-project
+        run: |
+          $dll_path = ((msbuild $env:UNIT_TEST_CSPROJ /nologo /verbosity:m /t:Build /p:Configuration=Release) -split "->")[1].Trim()
+          echo "::set-output name=DLL_PATH::$dll_path"
 
-  #     - name: Run unit tests
-  #       run: |
-  #         $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
-  #         $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
-  #         $env:Path += ';'+$path
-  #         vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
-  #         cat unit-test-results.txt
+      - name: Run unit tests
+        run: |
+          $path = C:\ProgramData\Chocolatey\bin\vswhere.exe -latest -products * -requires Microsoft.VisualStudio.Workload.ManagedDesktop Microsoft.VisualStudio.Workload.Web -requiresAny -property installationPath
+          $path = join-path $path 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\'
+          $env:Path += ';'+$path
+          vstest.console.exe  ${{ steps.built-unit-test-project.outputs.DLL_PATH }} > unit-test-results.txt
+          cat unit-test-results.txt
 
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: unit-test-results
-  #         path: unit-test-results.txt
+      - uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results
+          path: unit-test-results.txt
 
   codeql:
     name: CodeQL
@@ -114,23 +114,23 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.ORG_PAT_OWNER }}
 
-  # repository_dispatch:
-  #   if: github.event_name != 'pull_request'
-  #   name: Repository dispatch
-  #   needs: [unit_tests, codeql, quality_gate]
-  #   runs-on: ubuntu-latest
+  repository_dispatch:
+    if: github.event_name != 'pull_request'
+    name: Repository dispatch
+    needs: [unit_tests, codeql, quality_gate]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         ref: 'develop'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: 'develop'
 
-  #     - name: Repository dispatch
-  #       run: |
-  #         DISPATCH_BODY=$(jq '.event_type |= "dev-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
-  #         echo $DISPATCH_BODY
-  #         curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
-  #           --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
-  #           --header 'accept: application/vnd.github.v3+json' \
-  #           --header 'Content-Type: application/json' \
-  #           --data-raw "$DISPATCH_BODY"
+      - name: Repository dispatch
+        run: |
+          DISPATCH_BODY=$(jq '.event_type |= "dev-${{ secrets.MAN_NET48_APP_NAME }}-repository-dispatch" | .client_payload.git_reference |= "'${GITHUB_SHA}'"' ./.github/template/env-repository-dispatch.json)
+          echo $DISPATCH_BODY
+          curl -v --location --request POST 'https://api.github.com/repos/kubeopsskills-enterprise/${{ secrets.MAN_NET48_APP_NAME }}-pipeline/dispatches' \
+            --header 'Authorization: Bearer ${{ secrets.ORG_PAT }}' \
+            --header 'accept: application/vnd.github.v3+json' \
+            --header 'Content-Type: application/json' \
+            --data-raw "$DISPATCH_BODY"
