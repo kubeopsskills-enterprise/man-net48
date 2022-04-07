@@ -3,7 +3,7 @@ name: Develop CI
 on:
   push:
     branches:
-      - develop
+      - quality-gate
   pull_request:
     branches:
       - develop
