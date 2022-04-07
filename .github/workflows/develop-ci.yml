@@ -101,7 +101,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
 
     - name: Quality Gate Check
-      uses: kubeopsskills-enterprise/quality-gate-action
+      uses: kubeopsskills-enterprise/quality-gate-action@main
       with:
         repository: kubeopsskills-enterprise/man-net48
         severity: critical
